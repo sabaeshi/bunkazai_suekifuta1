@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>AR Go</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: sans-serif;
+    }
+
+    .header {
+      text-align: center;
+      padding: 6px 0 0px;
+    }
+
+    .header h1 {
+      font-size: 1.5em;
+      margin: 3px 0;
+      line-height: 1.2;
+    }
+
+    .controls {
+      margin: 5px;
+    }
+
+    #modelSelect {
+      padding: 5px 10px;
+    }
+
+    select {
+      font-size: 1em;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      color: #333;
+    }
+
+    model-viewer {
+      width: 100vw;
+      height: 80vh;
+    }
+
+    model-viewer::part(default-ar-button) {
+      display: none;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.5em 1em;
+      margin: 5px;
+      background: #cce3f6;
+      color: #222;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+      border: none;
+      transition: background 0.3s ease, transform 0.2s;
+    }
+
+    .btn:hover {
+      background: #a6c9e2;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 0.8em;
+      padding: 2px 0;
+      color: #666;
+    }
+
+    .footer a {
+      color: #3366cc;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>AR Go</h1>
+  </div>
+
+  <div class="controls">
+    <select id="modelSelect">
+      <option>読み込み中...</option>
+    </select>
+  </div>
+
+  <model-viewer
+    id="viewer"
+    ar
+    ar-modes="scene-viewer webxr quick-look"
+    src=""
+    alt="3D Model Viewer"
+    camera-controls
+    autoplay
+  >
+  </model-viewer>
+
+  <div>
+    <button id="arButton" class="btn">ARスタート</button>
+  </div>
+
+  <footer class="footer">
+    使用ライブラリ: <a href="https://modelviewer.dev/" target="_blank" rel="noopener">model-viewer</a>
+  </footer>
+
+  <script>
+    const csvUrl = "./models.csv";
+
+    async function loadCSV(url) {
+      const response = await fetch(url);
+      const text = await response.text();
+      return parseCSV(text);
+    }
+
+    function parseCSV(csvData) {
+      const lines = csvData.trim().split('\n');
+      const headers = lines[0].split(',');
+      const result = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const obj = {};
+        const currentline = lines[i].split(',');
+        for (let j = 0; j < headers.length; j++) {
+          obj[headers[j].trim()] = currentline[j].trim();
+        }
+        result.push(obj);
+      }
+      return result;
+    }
+
+    async function initialize() {
+      const modelSelect = document.getElementById("modelSelect");
+      const viewer = document.getElementById("viewer");
+      const arButton = document.getElementById("arButton");
+
+      const records = await loadCSV(csvUrl);
+
+      modelSelect.innerHTML = "";
+      records.forEach((item, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = item.name;
+        modelSelect.appendChild(option);
+      });
+
+      async function loadModel(path, name) {
+        viewer.src = path;
+        viewer.alt = name;
+      }
+
+      modelSelect.addEventListener("change", async (e) => {
+        const selectedIndex = e.target.value;
+        const item = records[selectedIndex];
+        if (item) {
+          await loadModel(item.path, item.name);
+        }
+      });
+
+      arButton.addEventListener("click", () => {
+        viewer.activateAR();
+      });
+
+      if (records.length > 0) {
+        await loadModel(records[0].path, records[0].name);
+      }
+    }
+
+    initialize();
+  </script>
+
+</body>
+</html>
