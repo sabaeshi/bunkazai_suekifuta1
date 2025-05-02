@@ -1,8 +1,3 @@
 ﻿path,name
-./models/model02.glb,土師器
-./models/model04.glb,緑釉陶器
-./models/model09.glb,灯明皿
-./models/model11.glb,須恵器
-./models/model12.glb,暗文土器
-./models/model14.glb,須恵器（蓋）
+./models/sample.glb,サンプル
 https://echizencity.github.io/opendata/kokufuhakkutsu/00101_kokufuhakkutsu_small.glb,遺構2023
